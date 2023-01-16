@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +18,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::apiResources([
     "products" => ProductController::class,
+    "categories" => ProductCategoryController::class
 ]);
 
 Route::get("/user/{id}/products", [ProductController::class, "sellerProducts"]);
 Route::get("/products/search/{query}", [ProductController::class, "search"]);
+Route::get("/categories/{id}/products", [ProductCategoryController::class, "categoryProducts"]);
