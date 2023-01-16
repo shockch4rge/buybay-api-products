@@ -19,7 +19,7 @@ class ProductImageFactory extends Factory
     {
         return [
             'product_id' => Product::all()->random()->id,
-            'url' => $this->faker->imageUrl(640, 480, 'cats', true, 'Faker'),
+            'url' => $this->faker->imageUrl(),
             "is_thumbnail" => $this->faker->boolean,
         ];
     }
