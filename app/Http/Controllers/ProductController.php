@@ -158,10 +158,12 @@ class ProductController extends Controller
             ->where("name", "like", "%$query%")
             ->orWhere("description", "like", "%$query%")
             ->with(["images", "categories"])
+            ->limit(10)
             ->get();
 
         $categories = ProductCategory::query()
             ->where("name", "like", "%$query%")
+            ->limit(10)
             ->get();
 
         return response([
