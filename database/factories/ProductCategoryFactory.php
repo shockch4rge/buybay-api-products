@@ -18,7 +18,6 @@ class ProductCategoryFactory extends Factory
     public function definition()
     {
         return [
-            "product_id" => Product::all()->random()->id,
             'name' => $this->faker->word,
         ];
     }
