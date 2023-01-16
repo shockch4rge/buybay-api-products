@@ -20,3 +20,4 @@ Route::apiResources([
 ]);
 
 Route::get("/user/{id}/products", [ProductController::class, "sellerProducts"]);
+Route::get("/products/search/{query}", [ProductController::class, "search"]);

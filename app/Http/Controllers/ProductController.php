@@ -60,6 +60,7 @@ class ProductController extends Controller
                 "url" => $url,
                 "is_thumbnail" => $request->is_thumbnail,
             ]);
+
             $image->save();
 
             return $image;
@@ -148,6 +149,25 @@ class ProductController extends Controller
         return response([
             "message" => "Returning " . $products->count() . " products",
             "products" => $products,
+        ]);
+    }
+
+    public function search(Request $request, string $query)
+    {
+        $products = Product::query()
+            ->where("name", "like", "%$query%")
+            ->orWhere("description", "like", "%$query%")
+            ->with(["images", "categories"])
+            ->get();
+
+        $categories = ProductCategory::query()
+            ->where("name", "like", "%$query%")
+            ->get();
+
+        return response([
+            "message" => "Returning " . $products->count() . " products",
+            "products" => $products,
+            "categories" => $categories,
         ]);
     }
 }
