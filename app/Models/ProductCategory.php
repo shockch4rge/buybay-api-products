@@ -11,7 +11,8 @@ class ProductCategory extends Model
 {
     use HasFactory, HasUuids;
 
-    public function product(): BelongsToMany {
-        return $this->belongsToMany(Product::class);
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, );
     }
 }
