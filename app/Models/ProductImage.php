@@ -10,6 +10,10 @@ class ProductImage extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'is_thumbnail' => 'boolean',
+    ];
+
     public function product(): BelongsTo {
         return $this->belongsTo(Product::class);
     }
