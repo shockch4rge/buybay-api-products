@@ -8,11 +8,11 @@ use Illuminate\Http\Request;
 
 class ProductCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request, int $limit = null)
     {
         return response([
             "message" => "Success",
-            "categories" => ProductCategory::all(),
+            "categories" => ProductCategory::query()->limit($limit)->get(),
         ]);
     }
 
