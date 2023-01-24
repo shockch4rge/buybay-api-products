@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductImage;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -49,36 +50,38 @@ class ProductController extends Controller
             'quantity' => $request->quantity,
         ]);
 
-        $product->save();
+        if ($request->hasFile("images")) {
+            $disk = Storage::disk();
+            $images = $request->file("images");
 
-        $product->images = array_map(function ($file) use ($request, $product) {
-            $image_name = time()."_".$request->title.".".$file->getClientOriginalExtension();
-            $url = $file->storeAs("images", $image_name, "s3");
+            array_walk($images, function ($file, $i) use ($product, $disk) {
+                $s3Path = $product->id . "/image_" . $i . $file->getClientOriginalExtension();
 
-            $image = ProductImage::query()->create([
-                "product_id" => $product->id,
-                "url" => $url,
-                "is_thumbnail" => $request->is_thumbnail,
-            ]);
+                return ProductImage::query()->create([
+                    "product_id" => $product->id,
+                    "url" => $disk->url($disk->put($s3Path, file_get_contents($file))),
+                ]);
+            });
+        }
 
-            $image->save();
+        array_walk($request->categories, function ($value) use ($product) {
+            $query = ProductCategory::query();
 
-            return $image;
-        }, $request->file("images"));
+            // if passed in an id
+            if ($query->find($value)) {
+                $product->categories()->attach($value);
+                return;
+            }
 
-        $product->categories = array_map(function ($value) use ($product) {
-            $category = ProductCategory::query()->create([
+            $query->create([
                 "product_id" => $product->id,
                 "name" => $value,
             ]);
-
-            $category->save();
-            return $category;
-        }, $request->categories);
+        });
 
         return response([
             "message" => "Success",
-            "product" => $product,
+            "product" => $product->with(["images", "categories"]),
         ]);
     }
 
@@ -152,24 +155,40 @@ class ProductController extends Controller
         ]);
     }
 
-    public function search(Request $request, string $query)
+    public function search(
+        Request $request,
+        string $query,
+        $includeProducts,
+        $includeCategories,
+        $limit = null,
+    )
     {
-        $products = Product::query()
-            ->where("name", "like", "%$query%")
-            ->orWhere("description", "like", "%$query%")
-            ->with(["images", "categories"])
-            ->limit(10)
-            ->get();
+        if (!$includeCategories && !$includeProducts) {
+            return response([
+                "message" => "Must include either categories or products",
+            ], 400);
+        }
 
-        $categories = ProductCategory::query()
-            ->where("name", "like", "%$query%")
-            ->limit(10)
-            ->get();
+        $body = [
+            "message" => "Returning search results",
+        ];
 
-        return response([
-            "message" => "Returning " . $products->count() . " products",
-            "products" => $products,
-            "categories" => $categories,
-        ]);
+        if ($includeProducts) {
+            $body["products"] = Product::query()
+                ->where("name", "like", "%$query%")
+                ->orWhere("description", "like", "%$query%")
+                ->with(["images", "categories"])
+                ->when(isset($limit), fn ($query, $limit) => $query->limit($limit))
+                ->get();
+        }
+
+        if ($includeCategories) {
+            $body["categories"] = ProductCategory::query()
+                ->where("name", "like", "%$query%")
+                ->when(isset($limit), fn ($query, $limit) => $query->limit($limit))
+                ->get();
+        }
+
+        return response($body);
     }
 }
