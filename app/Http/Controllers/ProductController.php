@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductImage;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -51,43 +52,41 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile("images")) {
-            $disk = Storage::disk();
-            $images = $request->file("images");
+            foreach ($request->file("images") as $i => $image) {
+                $path = $image->storeAs($product->id, "image_$i.{$image->extension()}");
 
-            array_walk($images, function ($file, $i) use ($product, $disk) {
-                $s3Path = $product->id . "/image_" . $i . $file->getClientOriginalExtension();
-
-                return ProductImage::query()->create([
+                ProductImage::query()->create([
                     "product_id" => $product->id,
-                    "url" => $disk->url($disk->put($s3Path, file_get_contents($file))),
+                    "url" => Storage::disk()->url($path),
+                    "is_thumbnail" => $i === 0,
                 ]);
-            });
+            }
         }
 
-        array_walk($request->categories, function ($value) use ($product) {
-            $query = ProductCategory::query();
-
+        foreach ($request->categories as $value) {
             // if passed in an id
-            if ($query->find($value)) {
+            if (ProductCategory::query()->find($value)) {
                 $product->categories()->attach($value);
-                return;
+                continue;
             }
 
-            $query->create([
+            $created = ProductCategory::query()->create([
                 "product_id" => $product->id,
                 "name" => $value,
             ]);
-        });
+
+            $product->categories()->attach($created->id);
+        }
 
         return response([
             "message" => "Success",
-            "product" => $product->with(["images", "categories"]),
+            "product" => $product->load(["images", "categories"]),
         ]);
     }
 
     public function show($id)
     {
-        $product = Product::with(["images", "categories"])->find($id);
+        $product = Product::query()->find($id)->with(["images", "categories"]);
 
         if (!$product) {
             return response([
@@ -114,7 +113,14 @@ class ProductController extends Controller
             "categories.*" => "string|distinct",
         ]);
 
-        $product = Product::find($id);
+        if ($validation->fails()) {
+            return response([
+                "message" => "Validation failed",
+                "errors" => $validation->errors(),
+            ], 400);
+        }
+
+        $product = Product::query()->find($id);
 
         if (!$product) {
             return response([
