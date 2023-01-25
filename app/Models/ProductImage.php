@@ -10,6 +10,12 @@ class ProductImage extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'product_id',
+        'url',
+        'is_thumbnail',
+    ];
+
     protected $casts = [
         'is_thumbnail' => 'boolean',
     ];
