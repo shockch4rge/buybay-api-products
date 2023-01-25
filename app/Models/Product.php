@@ -12,6 +12,19 @@ class Product extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $fillable = [
+        "seller_id",
+        "name",
+        "description",
+        "price",
+        "quantity",
+    ];
+
+    protected $casts = [
+        "price" => "float",
+        "quantity" => "integer",
+    ];
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
