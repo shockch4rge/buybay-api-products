@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dfef5539162385b328081bae53509d84",
+    "content-hash": "e6c2530255f554bfef1371caec34e3ea",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -5721,16 +5721,16 @@
         },
         {
             "name": "vladimir-yuldashev/laravel-queue-rabbitmq",
-            "version": "v13.0.1",
+            "version": "v13.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vyuldashev/laravel-queue-rabbitmq.git",
-                "reference": "e15f988004f3d8b4f65971042a5f9b29fd5b5876"
+                "reference": "1cd1c99f692263f830f680ea0a916d8ad35665bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vyuldashev/laravel-queue-rabbitmq/zipball/e15f988004f3d8b4f65971042a5f9b29fd5b5876",
-                "reference": "e15f988004f3d8b4f65971042a5f9b29fd5b5876",
+                "url": "https://api.github.com/repos/vyuldashev/laravel-queue-rabbitmq/zipball/1cd1c99f692263f830f680ea0a916d8ad35665bf",
+                "reference": "1cd1c99f692263f830f680ea0a916d8ad35665bf",
                 "shasum": ""
             },
             "require": {
@@ -5778,9 +5778,9 @@
             "description": "RabbitMQ driver for Laravel Queue. Supports Laravel Horizon.",
             "support": {
                 "issues": "https://github.com/vyuldashev/laravel-queue-rabbitmq/issues",
-                "source": "https://github.com/vyuldashev/laravel-queue-rabbitmq/tree/v13.0.1"
+                "source": "https://github.com/vyuldashev/laravel-queue-rabbitmq/tree/v13.1.0"
             },
-            "time": "2022-09-16T21:38:37+00:00"
+            "time": "2023-01-25T18:36:24+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
