@@ -55,28 +55,36 @@ class ProductController extends Controller
             foreach ($request->file("images") as $i => $image) {
                 $path = $image->storeAs($product->id, "image_$i.{$image->extension()}");
 
+                // can't use storePubliclyAs because there are unknown issues
+                Storage::setVisibility($path, 'public');
+
                 ProductImage::query()->create([
                     "product_id" => $product->id,
-                    "url" => Storage::disk()->url($path),
+                    "url" => Storage::url($path),
                     "is_thumbnail" => $i === 0,
                 ]);
             }
         }
 
-        foreach ($request->categories as $value) {
-            // if passed in an id
-            if (ProductCategory::query()->find($value)) {
-                $product->categories()->attach($value);
-                continue;
+        if ($request->has("categories")) {
+            foreach ($request->categories as $idOrName) {
+                // if passed in an id
+                if (ProductCategory::query()->find($idOrName)) {
+                    $product->categories()->attach($idOrName);
+                    continue;
+                }
+
+                // is a name instead
+                $created = ProductCategory::query()->create([
+                    "product_id" => $product->id,
+                    "name" => $idOrName,
+                ]);
+
+                $product->categories()->attach($created->id);
             }
-
-            $created = ProductCategory::query()->create([
-                "product_id" => $product->id,
-                "name" => $value,
-            ]);
-
-            $product->categories()->attach($created->id);
         }
+
+
 
         return response([
             "message" => "Success",
@@ -86,7 +94,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::query()->find($id)->with(["images", "categories"]);
+        $product = Product::with(["images", "categories"])->find($id);
 
         if (!$product) {
             return response([
@@ -139,21 +147,20 @@ class ProductController extends Controller
     public function destroy($id)
     {
         Product::destroy($id);
+        Storage::deleteDirectory($id);
 
         return response([
             "message" => "Product deleted",
         ]);
     }
 
-    public function sellerProducts(Request $request, $user_id) {
+    public function userProducts(Request $request, $id) {
         $products = Product::query()
-            ->where("seller_id", $user_id)
+            ->where("seller_id", $id)
             ->with(["images", "categories"])
             ->get();
 
         $reviews = FetchReviewsJob::dispatchSync($products);
-
-        echo $reviews;
 
         return response([
             "message" => "Returning " . $products->count() . " products",
