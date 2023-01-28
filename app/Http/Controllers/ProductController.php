@@ -84,8 +84,6 @@ class ProductController extends Controller
             }
         }
 
-
-
         return response([
             "message" => "Success",
             "product" => $product->load(["images", "categories"]),
@@ -111,7 +109,6 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $validation = Validator::make($request->all(), [
-            "seller_id" => "string",
             "name" => "string",
             "description" => "string",
             "price" => "numeric",
@@ -136,11 +133,46 @@ class ProductController extends Controller
             ], 400);
         }
 
-        $product->update($request->all());
+        $product->update($request->except(["categories", "images"]));
+
+        if ($request->has("categories")) {
+            $updatedCategories = array_map(function ($categoryIdOrName) use ($product) {
+                // found as id
+                if (ProductCategory::query()->find($categoryIdOrName)) {
+                    return $categoryIdOrName;
+                }
+
+                $created = ProductCategory::query()->create([
+                    "product_id" => $product->id,
+                    "name" => $categoryIdOrName,
+                ]);
+                return $created->id;
+            }, $request->categories);
+
+            $product->categories()->sync($updatedCategories);
+        }
+
+        if ($request->hasFile("images")) {
+            Storage::deleteDirectory($product->id);
+            ProductImage::query()->where("product_id", $product->id)->delete();
+
+            foreach ($request->file("images") as $i => $image) {
+                $path = $image->storeAs($product->id, "image_$i.{$image->extension()}");
+
+                // can't use storePubliclyAs because there are unknown issues
+                Storage::setVisibility($path, 'public');
+
+                ProductImage::query()->create([
+                    "product_id" => $product->id,
+                    "url" => Storage::url($path),
+                    "is_thumbnail" => $i === 0,
+                ]);
+            }
+        }
 
         return response([
-            "message" => "Updated product id: " . $product->id,
-            "product" => $product,
+            "message" => "Updated product id: $product->id",
+            "product" => $product->load(["images", "categories"]),
         ]);
     }
 
