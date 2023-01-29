@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 
 class ProductCategoryController extends Controller
 {
@@ -43,19 +45,39 @@ class ProductCategoryController extends Controller
         ]);
     }
 
-    public function categoryProducts(Request $request, string $id)
+    public function categoryProducts(Request $request)
     {
-        $products = ProductCategory::query()
-            ->find($id)
-            ->products()
-            ->with(["images", "categories"])
-            ->orderBy("name")
-            ->limit(10)
-            ->get();
+        $validator = Validator::make($request->all(), [
+            "limit" => "integer",
+            "categories" => "required|array",
+            "categories.*" => "string|distinct",
+        ]);
+
+        if ($validator->fails()) {
+            return response([
+                "message" => "Validation failed",
+                "errors" => $validator->errors(),
+            ], 400);
+        }
+
+        $products = array_merge(
+            ...array_map(function ($id) use ($request) {
+                return ProductCategory::query()
+                    ->find($id)
+                    ->products()
+                    ->with(["images", "categories"])
+                    ->limit($request->limit)
+                    ->get()
+                    ->toArray();
+            }, $request->categories)
+        );
+
+        $uniqueProducts = collect($products)->unique("id");
 
         return response([
-            "message" => "Returning " . $products->count() . " products",
-            "products" => $products,
+            "message" => "Returning " . count($uniqueProducts) . " products",
+            "categories" => $request->categories,
+            "products" => $uniqueProducts,
         ]);
     }
 }
