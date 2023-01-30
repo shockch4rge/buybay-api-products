@@ -21,5 +21,5 @@ Route::apiResource("categories", ProductCategoryController::class)->except(["ind
 
 Route::get("/user/{id}/products", [ProductController::class, "userProducts"]);
 Route::get("/products/search/{query}/{products?}/{categories?}/{limit?}", [ProductController::class, "search"]);
-Route::get("/categories/{id}/products", [ProductCategoryController::class, "categoryProducts"]);
 Route::get("/categories/{limit?}", [ProductCategoryController::class, "index"]);
+Route::post("/categories/products", [ProductCategoryController::class, "categoryProducts"]);
