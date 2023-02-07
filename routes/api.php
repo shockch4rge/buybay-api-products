@@ -23,3 +23,5 @@ Route::get("/user/{id}/products", [ProductController::class, "userProducts"]);
 Route::get("/products/search/{query}/{products?}/{categories?}/{limit?}", [ProductController::class, "search"]);
 Route::get("/categories/{limit?}", [ProductCategoryController::class, "index"]);
 Route::post("/categories/products", [ProductCategoryController::class, "categoryProducts"]);
+Route::post("/products/ids", [ProductController::class, "productsByIds"]);
+Route::post("/products/purchase", [ProductController::class, "purchaseProducts"]);
