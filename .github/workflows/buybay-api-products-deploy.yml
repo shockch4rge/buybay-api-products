@@ -1,0 +1,42 @@
+name: Deploy buybay-api-products (EC2)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into EC2 and build
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_ADDRESS }}
+          username: ${{ secrets.HOST_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            cd ~/buybay/buybay-api-products/
+            mv docker-compose.yml docker-compose.prod.yml
+            mv docker-compose.local.yml docker-compose.yml
+            git pull origin main
+            mv docker-compose.yml docker-compose.local.yml
+            mv docker-compose.prod.yml docker-compose.yml
+            echo "APP_KEY=${{ secrets.APP_KEY }}" > .env
+            echo "APP_PORT=${{ secrets.APP_PORT }}" >> .env
+            echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+            echo "DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"" >> .env
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+            echo "AWS_DEFAULT_REGION=${{ secrets.AWS_DEFAULT_REGION }}" >> .env
+            echo "AWS_BUCKET=${{ secrets.AWS_BUCKET }}" >> .env
+            echo "FILESYSTEM_DISK=${{ secrets.FILESYSTEM_DISK }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "Deployed buybay-api-products"
+            ./vendor/bin/sail up -d
