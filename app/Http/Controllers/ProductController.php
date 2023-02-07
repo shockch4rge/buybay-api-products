@@ -22,6 +22,16 @@ class ProductController extends Controller
         ]);
     }
 
+    public function productsByIds(Request $request)
+    {
+        $ids = $request->ids;
+        $products = Product::query()->whereIn("id", $ids)->with(["images", "categories"])->get();
+
+        return response([
+            "products" => $products,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -235,5 +245,18 @@ class ProductController extends Controller
         }
 
         return response($body);
+    }
+
+    public function purchase(Request $request)
+    {
+        $ids = $request->ids;
+        Product::query()->findMany($ids)->each(function ($product) {
+            $product->quantity -= 1;
+            $product->save();
+        });
+
+        return response([
+            "message" => "Success",
+        ]);
     }
 }
