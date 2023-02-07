@@ -21,7 +21,7 @@ jobs:
             cd ~/buybay/buybay-api-products/
             mv docker-compose.yml docker-compose.prod.yml
             mv docker-compose.local.yml docker-compose.yml
-            git pull origin main
+            git pull origin master
             mv docker-compose.yml docker-compose.local.yml
             mv docker-compose.prod.yml docker-compose.yml
             echo "APP_KEY=${{ secrets.APP_KEY }}" > .env
