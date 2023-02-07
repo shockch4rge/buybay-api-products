@@ -3,7 +3,7 @@ name: Deploy buybay-api-products (EC2)
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "**"
 
