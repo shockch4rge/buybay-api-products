@@ -49,7 +49,7 @@ class ProductCategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "limit" => "integer",
-            "categories" => "required|array",
+            "categories" => "array",
             "categories.*" => "string|distinct",
         ]);
 
@@ -58,6 +58,19 @@ class ProductCategoryController extends Controller
                 "message" => "Validation failed",
                 "errors" => $validator->errors(),
             ], 400);
+        }
+
+        if (empty($request->categories)) {
+            $products = Product::query()
+                ->limit($request->limit)
+                ->with(["images", "categories"])
+                ->get();
+
+            return response([
+                "message" => "Returning " . count($products) . " products",
+                "categories" => $request->categories,
+                "products" => $products,
+            ]);
         }
 
         $products = array_merge(
