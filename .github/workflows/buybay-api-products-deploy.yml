@@ -19,6 +19,8 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
             cd ~/buybay/buybay-api-products/
+            mv docker-compose.yml docker-compose.prod.yml
+            mv docker-compose.local.yml docker-compose.yml
             git pull origin main
             mv docker-compose.yml docker-compose.local.yml
             mv docker-compose.prod.yml docker-compose.yml
@@ -37,5 +39,4 @@ jobs:
             echo "FILESYSTEM_DISK=${{ secrets.FILESYSTEM_DISK }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             echo "Deployed buybay-api-products"
-            echo "hello"
             ./vendor/bin/sail up -d
