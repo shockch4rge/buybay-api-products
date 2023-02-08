@@ -39,5 +39,4 @@ jobs:
             echo "FILESYSTEM_DISK=${{ secrets.FILESYSTEM_DISK }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             echo "Deployed buybay-api-products"
-            echo "hello"
             ./vendor/bin/sail up -d
