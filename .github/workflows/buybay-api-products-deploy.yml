@@ -25,6 +25,7 @@ jobs:
             mv docker-compose.yml docker-compose.local.yml
             mv docker-compose.prod.yml docker-compose.yml
             echo "APP_KEY=${{ secrets.APP_KEY }}" > .env
+            echo "APP_PORT=${{ secrets.APP_PORT }}" >> .env
             echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> .env
             echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
             echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
