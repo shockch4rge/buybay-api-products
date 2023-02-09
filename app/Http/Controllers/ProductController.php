@@ -7,8 +7,12 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductImage;
 use Aws\S3\S3Client;
+use Database\Seeders\ProductCategorySeeder;
+use Database\Seeders\ProductImageSeeder;
+use Database\Seeders\ProductSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -19,6 +23,22 @@ class ProductController extends Controller
         return response([
             "message" => "Success",
             "products" => Product::with(["images", "categories"])->get(),
+        ]);
+    }
+
+    public function reset()
+    {
+        Product::query()->delete();
+        ProductCategory::query()->delete();
+        ProductImage::query()->delete();
+
+        (new ProductSeeder())->run();
+        (new ProductCategorySeeder())->run();
+        (new ProductImageSeeder())->run();
+
+        Storage::deleteDirectory("products");
+        return response([
+            "message" => "Success",
         ]);
     }
 
@@ -201,8 +221,6 @@ class ProductController extends Controller
             ->where("seller_id", $id)
             ->with(["images", "categories"])
             ->get();
-
-        $reviews = FetchReviewsJob::dispatchSync($products);
 
         return response([
             "message" => "Returning " . $products->count() . " products",
