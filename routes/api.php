@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::apiResource("products", ProductController::class);
-Route::apiResource("categories", ProductCategoryController::class)->except(["index"]);
+Route::apiResource("categories", ProductCategoryController::class)->except(["index", "store"]);
 
 Route::get("/user/{id}/products", [ProductController::class, "userProducts"]);
 Route::get("/products/search/{query}/{products?}/{categories?}/{limit?}", [ProductController::class, "search"]);
@@ -25,3 +25,4 @@ Route::get("/categories/{limit?}", [ProductCategoryController::class, "index"]);
 Route::post("/categories/products", [ProductCategoryController::class, "categoryProducts"]);
 Route::post("/products/ids", [ProductController::class, "productsByIds"]);
 Route::post("/products/purchase", [ProductController::class, "purchaseProducts"]);
+Route::post("/reset", [ProductController::class, "reset"]);
