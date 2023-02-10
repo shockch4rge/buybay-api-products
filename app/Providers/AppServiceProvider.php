@@ -14,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        URL::forceScheme('`http`');
+        if (!$this->app->isLocal()) {
+            $this->app['request']->server->set('HTTPS', true);
+        }
     }
 
     /**
